@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * Created by WaiTuck on 11/01/2016.
  */
-public class HelloWorldAction extends AnAction {
+public class GenerateGraphAction extends AnAction {
     private List<PsiClass> psiClasses  = new ArrayList<>();
     @Override
     public void actionPerformed(AnActionEvent e) {
