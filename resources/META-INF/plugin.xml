@@ -26,16 +26,16 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
-        <applicationService serviceInterface="DayOfWeekService" serviceImplementation="DayOfWeekServiceImpl"/>
+        <applicationService serviceInterface="com.smu.graphme.service.GenerateGraphService" serviceImplementation="com.smu.graphme.service.GenerateGraphServiceImpl"/>
     </extensions>
 
     <actions>
         <!-- Add your actions here -->
-        <action id="GenerateGraphAction" class="GenerateGraphAction" text="Generate Dependency Graph"
+        <action id="com.smu.graphme.action.GenerateGraphAction" class="com.smu.graphme.action.GenerateGraphAction" text="Generate Dependency Graph"
                 description="Generates the dependency graph model">
         </action>
         <group id="GraphMe" text="GraphMe" description="GraphMe Contextual Menu">
-            <reference ref="GenerateGraphAction"/>
+            <reference ref="com.smu.graphme.action.GenerateGraphAction"/>
             <add-to-group group-id="MainMenu" anchor="after" relative-to-action="WindowMenu"/>
             <add-to-group group-id="MainToolBar" anchor="after" relative-to-action="HelpTopics"/>
         </group>
