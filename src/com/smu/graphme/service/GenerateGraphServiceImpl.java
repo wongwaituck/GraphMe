@@ -11,9 +11,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.source.PsiParameterImpl;
+import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.util.containers.ContainerUtil;
 import com.smu.graphme.model.ASTMatrix;
 import com.smu.graphme.model.DefaultViewSettings;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.SimpleDateFormat;
@@ -35,15 +38,10 @@ public class GenerateGraphServiceImpl implements GenerateGraphService, Applicati
 
     }
 
-    public String getDayOfWeek() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE");
-        return String.format("Hello World! It's %s", simpleDateFormat.format(new Date()));
-    }
-
     @NotNull
     @Override
     public String getComponentName() {
-        return "DayFinder";
+        return "GenerateGraph";
     }
 
     @Override
@@ -126,11 +124,36 @@ public class GenerateGraphServiceImpl implements GenerateGraphService, Applicati
                 if(pcb != null) {
                     PsiStatement[] statements = pcb.getStatements();
                     for(PsiStatement statement: statements){
-                        PsiReference[] references = statement.getReferences();
+
                         PsiElement[] childElements = statement.getChildren();
-                        System.out.println(references);
-                        System.out.println(childElements);
+
                         for(PsiElement childElement : childElements){
+                            if(childElement instanceof PsiLocalVariable){
+                                //add declaration type to dependency
+                                PsiLocalVariable plv = (PsiLocalVariable) childElement;
+
+                                PsiElement[] plvChildren = plv.getChildren();
+                                for(PsiElement plvChild : plvChildren){
+                                    if(plvChild instanceof PsiMethodCallExpressionImpl){
+                                        PsiMethodCallExpressionImpl methodImpl = (PsiMethodCallExpressionImpl) plvChild;
+                                        PsiMethod method = methodImpl.resolveMethod();
+
+                                        //resolve owning class
+                                        PsiIdentifier owningClazz = method.getContainingClass().getNameIdentifier();
+                                        am.setDependency(currPi, owningClazz);
+
+                                        //resolve parameters
+                                        PsiParameter[] params = method.getParameterList().getParameters();
+                                        for(PsiParameter param : params){
+                                            PsiIdentifier paramClazz = getPsiIdentifier(param.getTypeElement());
+                                            am.setDependency(currPi, paramClazz);
+                                        }
+                                    }
+                                }
+
+                                PsiIdentifier pi = getPsiIdentifier(plv.getTypeElement());
+                                am.setDependency(currPi, pi);
+                            }
 
                         }
                     }
