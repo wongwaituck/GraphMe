@@ -1,5 +1,6 @@
 package com.smu.graphme.service;
 
+import b.b.G;
 import com.intellij.ide.projectView.ProjectViewSettings;
 import com.intellij.ide.projectView.impl.nodes.PackageUtil;
 import com.intellij.ide.projectView.impl.nodes.ProjectViewDirectoryHelper;
@@ -16,6 +17,9 @@ import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.util.containers.ContainerUtil;
 import com.smu.graphme.model.ASTMatrix;
 import com.smu.graphme.model.DefaultViewSettings;
+import com.smu.graphme.util.GraphStrategy;
+import com.smu.graphme.util.GraphStrategyException;
+import com.smu.graphme.util.GraphStrategyFactory;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.jetbrains.annotations.NotNull;
 
@@ -87,9 +91,9 @@ public class GenerateGraphServiceImpl implements GenerateGraphService, Applicati
         for(PsiClass c : psiClasses){
 
             //resolve implementation and extends list
-            PsiClass[] psiClasses = c.getSupers();
+            PsiClass[] psiSuperClasses = c.getSupers();
             PsiIdentifier currPi = c.getNameIdentifier();
-            for(PsiClass pc : psiClasses){
+            for(PsiClass pc : psiSuperClasses){
                 PsiIdentifier pi = pc.getNameIdentifier();
                 am.setDependency(currPi, pi);
             }
@@ -98,7 +102,7 @@ public class GenerateGraphServiceImpl implements GenerateGraphService, Applicati
             PsiField[] psiFields = c.getAllFields();
             for(PsiField psiField : psiFields){
                 if(psiField != null) {
-                    PsiIdentifier pi = getPsiIdentifier(psiField);
+                    PsiIdentifier pi = GraphStrategy.getPsiIdentifier(psiField, psiClasses);
                     am.setDependency(currPi, pi);
                 }
             }
@@ -106,57 +110,11 @@ public class GenerateGraphServiceImpl implements GenerateGraphService, Applicati
             //resolve method dependencies
             PsiMethod[] psiMethods = c.getMethods();
             for(PsiMethod psiMethod : psiMethods){
-                //resolve parameter dependencies
-                PsiParameter[] psiParameters = psiMethod.getParameterList().getParameters();
-                for(PsiParameter pp : psiParameters) {
-                    PsiIdentifier pi = getPsiIdentifier(pp.getTypeElement());
-                    if (pi != null) {
-                        am.setDependency(currPi, pi);
-                    }
-                }
+                try {
+                    GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(psiMethod);
+                    gs.handleCase(am, currPi, psiClasses);
+                } catch (GraphStrategyException exception){
 
-                //resolve return type dependencies
-                PsiIdentifier returnTypei = getPsiIdentifier(psiMethod.getReturnTypeElement());
-                am.setDependency(currPi, returnTypei);
-
-                //resolve method body dependencies
-                PsiCodeBlock pcb = psiMethod.getBody();
-                if(pcb != null) {
-                    PsiStatement[] statements = pcb.getStatements();
-                    for(PsiStatement statement: statements){
-
-                        PsiElement[] childElements = statement.getChildren();
-
-                        for(PsiElement childElement : childElements){
-                            if(childElement instanceof PsiLocalVariable){
-                                //add declaration type to dependency
-                                PsiLocalVariable plv = (PsiLocalVariable) childElement;
-
-                                PsiElement[] plvChildren = plv.getChildren();
-                                for(PsiElement plvChild : plvChildren){
-                                    if(plvChild instanceof PsiMethodCallExpressionImpl){
-                                        PsiMethodCallExpressionImpl methodImpl = (PsiMethodCallExpressionImpl) plvChild;
-                                        PsiMethod method = methodImpl.resolveMethod();
-
-                                        //resolve owning class
-                                        PsiIdentifier owningClazz = method.getContainingClass().getNameIdentifier();
-                                        am.setDependency(currPi, owningClazz);
-
-                                        //resolve parameters
-                                        PsiParameter[] params = method.getParameterList().getParameters();
-                                        for(PsiParameter param : params){
-                                            PsiIdentifier paramClazz = getPsiIdentifier(param.getTypeElement());
-                                            am.setDependency(currPi, paramClazz);
-                                        }
-                                    }
-                                }
-
-                                PsiIdentifier pi = getPsiIdentifier(plv.getTypeElement());
-                                am.setDependency(currPi, pi);
-                            }
-
-                        }
-                    }
                 }
             }
                 /*
@@ -173,27 +131,6 @@ public class GenerateGraphServiceImpl implements GenerateGraphService, Applicati
 
     }
 
-    private PsiIdentifier getPsiIdentifier(PsiField field){
-        for(PsiClass pc : psiClasses){
-            if(field.getTypeElement() != null && pc.getName().equals(field.getTypeElement().getText())){
-                return pc.getNameIdentifier();
-            }
-        }
-        return null;
-    }
-
-    private PsiIdentifier getPsiIdentifier(PsiTypeElement typeElement){
-        if(typeElement == null){
-            return null;
-        }
-
-        for(PsiClass pc : psiClasses){
-            if(pc.getName().equals(typeElement.getText())){
-                return pc.getNameIdentifier();
-            }
-        }
-        return null;
-    }
 
     private PsiPackage[] getLeafPackages(PsiPackage root){
         //collect all relevant classes along the way

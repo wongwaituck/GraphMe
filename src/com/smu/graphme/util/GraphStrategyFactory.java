@@ -1,0 +1,36 @@
+package com.smu.graphme.util;
+
+import com.intellij.psi.*;
+import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
+import com.intellij.psi.impl.source.tree.java.PsiSwitchLabelStatementImpl;
+import com.siyeh.ig.portability.RuntimeExecInspection;
+
+/**
+ * Created by WaiTuck on 24/01/2016.
+ */
+public class GraphStrategyFactory {
+    public static GraphStrategy getRelevantStrategy(PsiElement e) throws GraphStrategyException{
+        if (e instanceof PsiMethodCallExpressionImpl){
+            return new MethodCallExpressionImplGraphStrategy(e);
+        } else if (e instanceof PsiMethod){
+            return new MethodGraphStrategy(e);
+        } else if (e instanceof PsiCodeBlock){
+            return new CodeBlockGraphStrategy(e);
+        } else if (e instanceof PsiSwitchStatement){
+            return new SwitchStatementGraphStrategy(e);
+        } else if (e instanceof PsiSwitchLabelStatement){
+            return new SwitchLabelStatementGraphStrategy(e);
+        } else if (e instanceof PsiReturnStatement){
+            return new ReturnStatementGraphStrategy(e);
+        } else if (e instanceof PsiLocalVariable){
+            return new LocalVariableGraphStrategy(e);
+        } else if (e instanceof PsiExpression){
+            return new ExpressionGraphStrategy(e);
+        } else if (e instanceof PsiStatement){
+            return new StatementGraphStrategy(e);
+        } else{
+            throw new GraphStrategyException("Not yet implemented!");
+
+        }
+    }
+}
