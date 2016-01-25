@@ -16,7 +16,11 @@ public class MethodCallExpressionImplGraphStrategy extends GraphStrategy{
 
     @Override
     public void handleCase(ASTMatrix am, PsiIdentifier currPi, Set<PsiClass> psiClasses) {
+
+
         PsiMethodCallExpressionImpl methodImpl = (PsiMethodCallExpressionImpl) getPsiElement();
+        PsiElement[] elements = methodImpl.getChildren();
+
         PsiMethod method = methodImpl.resolveMethod();
 
         //resolve owning class
@@ -24,11 +28,29 @@ public class MethodCallExpressionImplGraphStrategy extends GraphStrategy{
         am.setDependency(currPi, owningClazz);
 
         //resolve parameters
+        //TODO THIS IS NOT CORRECT
         PsiParameter[] params = method.getParameterList().getParameters();
         for(PsiParameter param : params){
             PsiIdentifier paramClazz = getPsiIdentifier(param.getTypeElement(), psiClasses);
             am.setDependency(currPi, paramClazz);
         }
+
+        for(PsiElement element : elements){
+            if(element instanceof PsiReferenceExpression){
+                //get the current one and at the
+                PsiReferenceExpression pre = (PsiReferenceExpression) element;
+                PsiExpression expr = pre.getQualifierExpression();
+                try{
+                    GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(expr);
+                    gs.handleCase(am, currPi, psiClasses);
+                } catch (GraphStrategyException e){
+
+                }
+            }
+        }
+
+
+
 
     }
 }
