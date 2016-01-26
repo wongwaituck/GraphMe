@@ -24,6 +24,10 @@ public class GraphStrategyFactory {
             return new ReturnStatementGraphStrategy(e);
         } else if (e instanceof PsiWhileStatement){
             return new WhileStatementGraphStrategy(e);
+        } else if (e instanceof PsiNewExpression){
+            return new NewExpressionGraphStrategy(e);
+        } else if (e instanceof PsiParameter){
+            return new ParameterGraphStrategy(e);
         } else if (e instanceof PsiLocalVariable){
             return new LocalVariableGraphStrategy(e);
         } else if (e instanceof PsiInstanceOfExpression) {

@@ -40,6 +40,16 @@ public abstract class GraphStrategy {
         return null;
     }
 
+    public static PsiIdentifier getPsiIdentifier(PsiJavaCodeReferenceElement type, Set<PsiClass> psiClasses){
+        for(PsiClass pc : psiClasses){
+            if(type != null && pc.getQualifiedName().equals(type.getQualifiedName())){
+
+                return pc.getNameIdentifier();
+            }
+        }
+        return null;
+    }
+
     public static PsiIdentifier getPsiIdentifier(PsiTypeElement typeElement, Set<PsiClass> psiClasses){
         if(typeElement == null){
             return null;
