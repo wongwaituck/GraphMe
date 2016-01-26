@@ -1,10 +1,8 @@
 package com.smu.graphme.service;
 
-import b.b.G;
 import com.intellij.ide.projectView.ProjectViewSettings;
 import com.intellij.ide.projectView.impl.nodes.PackageUtil;
 import com.intellij.ide.projectView.impl.nodes.ProjectViewDirectoryHelper;
-import com.intellij.ide.projectView.impl.nodes.PsiMethodNode;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.components.ApplicationComponent;
@@ -12,18 +10,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.PsiParameterImpl;
-import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.util.containers.ContainerUtil;
 import com.smu.graphme.model.ASTMatrix;
 import com.smu.graphme.model.DefaultViewSettings;
 import com.smu.graphme.util.GraphStrategy;
 import com.smu.graphme.util.GraphStrategyException;
 import com.smu.graphme.util.GraphStrategyFactory;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**

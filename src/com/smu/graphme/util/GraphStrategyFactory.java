@@ -22,10 +22,16 @@ public class GraphStrategyFactory {
             return new SwitchLabelStatementGraphStrategy(e);
         } else if (e instanceof PsiReturnStatement){
             return new ReturnStatementGraphStrategy(e);
+        } else if (e instanceof PsiWhileStatement){
+            return new WhileStatementGraphStrategy(e);
         } else if (e instanceof PsiLocalVariable){
             return new LocalVariableGraphStrategy(e);
+        } else if (e instanceof PsiInstanceOfExpression) {
+            return new InstanceofExpressionGraphStrategy(e);
         } else if (e instanceof PsiExpression){
             return new ExpressionGraphStrategy(e);
+        } else if (e instanceof PsiIfStatement){
+            return new IfStatementGraphStrategy(e);
         } else if (e instanceof PsiStatement){
             return new StatementGraphStrategy(e);
         } else{

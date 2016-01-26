@@ -28,29 +28,32 @@ public class MethodCallExpressionImplGraphStrategy extends GraphStrategy{
         am.setDependency(currPi, owningClazz);
 
         //resolve parameters
-        //TODO THIS IS NOT CORRECT
-        PsiParameter[] params = method.getParameterList().getParameters();
-        for(PsiParameter param : params){
-            PsiIdentifier paramClazz = getPsiIdentifier(param.getTypeElement(), psiClasses);
-            am.setDependency(currPi, paramClazz);
+        PsiExpression[] pel = methodImpl.getArgumentList().getExpressions();
+
+        for(PsiExpression psiExpression : pel){
+            try{
+                GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(psiExpression);
+                gs.handleCase(am, currPi, psiClasses);
+            } catch (GraphStrategyException e){
+
+            }
         }
 
         for(PsiElement element : elements){
             if(element instanceof PsiReferenceExpression){
                 //get the current one and at the
                 PsiReferenceExpression pre = (PsiReferenceExpression) element;
-                PsiExpression expr = pre.getQualifierExpression();
-                try{
-                    GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(expr);
-                    gs.handleCase(am, currPi, psiClasses);
-                } catch (GraphStrategyException e){
+                for(PsiElement preElement : pre.getChildren()){
+                    try{
+                        GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(preElement);
+                        gs.handleCase(am, currPi, psiClasses);
+                    } catch (GraphStrategyException e){
 
+                    }
                 }
+
             }
         }
-
-
-
 
     }
 }
