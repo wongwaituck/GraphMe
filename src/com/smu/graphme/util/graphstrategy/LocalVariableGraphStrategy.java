@@ -1,6 +1,5 @@
-package com.smu.graphme.util;
+package com.smu.graphme.util.graphstrategy;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.psi.*;
 import com.smu.graphme.model.ASTMatrix;
 
@@ -28,7 +27,7 @@ public class LocalVariableGraphStrategy extends GraphStrategy {
             }
 
         }
-        PsiIdentifier pi = GraphStrategy.getPsiIdentifier(plv.getTypeElement(), psiClasses);
+        PsiIdentifier pi = getPsiIdentifier(plv.getTypeElement(), psiClasses);
         am.setDependency(currPi, pi);
     }
 }

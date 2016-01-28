@@ -8,14 +8,12 @@
 * method return types
 * method parameters
 * method calls (params, return)
-
-##To check
 * arrays
 * inner classes
 * constructors
 * super classes
 * interfaces
+* Generics
 
 ##To Do
-* Generics
-* anonymous classes
+* ???

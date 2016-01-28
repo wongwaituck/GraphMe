@@ -1,6 +1,5 @@
-package com.smu.graphme.util;
+package com.smu.graphme.util.graphstrategy;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.psi.*;
 import com.smu.graphme.model.ASTMatrix;
 

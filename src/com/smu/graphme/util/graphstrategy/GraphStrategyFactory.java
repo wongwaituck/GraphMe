@@ -1,9 +1,7 @@
-package com.smu.graphme.util;
+package com.smu.graphme.util.graphstrategy;
 
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
-import com.intellij.psi.impl.source.tree.java.PsiSwitchLabelStatementImpl;
-import com.siyeh.ig.portability.RuntimeExecInspection;
 
 /**
  * Created by WaiTuck on 24/01/2016.
@@ -26,6 +24,8 @@ public class GraphStrategyFactory {
             return new WhileStatementGraphStrategy(e);
         } else if (e instanceof PsiNewExpression){
             return new NewExpressionGraphStrategy(e);
+        } else if (e instanceof PsiTypeElement){
+            return new TypeElementGraphStrategy(e);
         } else if (e instanceof PsiParameter){
             return new ParameterGraphStrategy(e);
         } else if (e instanceof PsiLocalVariable){

@@ -2,9 +2,11 @@ package com.smu.graphme.model;
 
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiIdentifier;
+import com.smu.graphme.util.PsiUtility;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by WaiTuck on 15/01/2016.
@@ -55,7 +57,27 @@ public class ASTMatrix {
         }
     }
 
-    public void dumpDependencyToFile(){
+    public void generateFromSeedSet(PsiClass[] seedPsiClasses){
+        Set<PsiIdentifier> seedIdClasses = PsiUtility.convertPsiClassesToPsiIdentifiers(seedPsiClasses);
+        for(int rowIndex = 0; rowIndex < referenceMatrix.length; rowIndex++){
+            if(seedIdClasses.contains(psis.get(rowIndex))) {
+                for (int colIndex = 0; colIndex < referenceMatrix[rowIndex].length; colIndex++) {
+                    if (referenceMatrix[rowIndex][colIndex] > 0) {
+                        System.out.println(psis.get(rowIndex).getText() + " depends on " + psis.get(colIndex).getText());
+                    }
+                }
+            }
+        }
 
+    }
+
+    public void dumpDependencyToFile(){
+        for(int rowIndex = 0; rowIndex < referenceMatrix.length; rowIndex++){
+            for(int colIndex = 0; colIndex < referenceMatrix[rowIndex].length; colIndex++){
+                if(referenceMatrix[rowIndex][colIndex] > 0){
+                    System.out.println(psis.get(rowIndex).getText() + "<-" + psis.get(colIndex).getText());
+                }
+            }
+        }
     }
 }

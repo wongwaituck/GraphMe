@@ -1,4 +1,4 @@
-package com.smu.graphme.util;
+package com.smu.graphme.util.graphstrategy;
 
 import com.intellij.psi.*;
 import com.smu.graphme.model.ASTMatrix;
@@ -22,7 +22,7 @@ public class MethodGraphStrategy extends GraphStrategy{
             am.setDependency(currPi, getPsiIdentifier(param.getTypeElement(), psiClasses));
         }
         //resolve return type dependencies
-        PsiIdentifier returnTypei = GraphStrategy.getPsiIdentifier(psiMethod.getReturnTypeElement(), psiClasses);
+        PsiIdentifier returnTypei = getPsiIdentifier(psiMethod.getReturnTypeElement(), psiClasses);
 
         am.setDependency(currPi, returnTypei);
 

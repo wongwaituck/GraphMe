@@ -1,4 +1,4 @@
-package com.smu.graphme.util;
+package com.smu.graphme.util.graphstrategy;
 
 import com.intellij.psi.*;
 import com.smu.graphme.model.ASTMatrix;
@@ -31,6 +31,10 @@ public abstract class GraphStrategy {
     }
 
     public static PsiIdentifier getPsiIdentifier(PsiType type, Set<PsiClass> psiClasses){
+        if(type instanceof PsiWildcardType){
+            PsiWildcardType pwt = (PsiWildcardType) type;
+            return getPsiIdentifier(pwt.getBound(), psiClasses);
+        }
         for(PsiClass pc : psiClasses){
             if(type != null && pc.getQualifiedName().equals(type.getCanonicalText())){
 
@@ -41,6 +45,7 @@ public abstract class GraphStrategy {
     }
 
     public static PsiIdentifier getPsiIdentifier(PsiJavaCodeReferenceElement type, Set<PsiClass> psiClasses){
+
         for(PsiClass pc : psiClasses){
             if(type != null && pc.getQualifiedName().equals(type.getQualifiedName())){
 

@@ -1,4 +1,4 @@
-package com.smu.graphme.util;
+package com.smu.graphme.util.graphstrategy;
 
 /**
  * Created by WaiTuck on 24/01/2016.

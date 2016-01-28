@@ -1,7 +1,6 @@
-package com.smu.graphme.util;
+package com.smu.graphme.util.graphstrategy;
 
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.tree.java.PsiSwitchStatementImpl;
 import com.smu.graphme.model.ASTMatrix;
 
 import java.util.Set;

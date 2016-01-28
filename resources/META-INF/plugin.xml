@@ -31,13 +31,19 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="com.smu.graphme.action.GenerateGraphAction" class="com.smu.graphme.action.GenerateGraphAction" text="Generate Dependency Graph"
+        <action id="GenerateGraphAction" class="com.smu.graphme.action.GenerateGraphAction" text="Generate Dependency Graph"
                 description="Generates the dependency graph model">
         </action>
+        <action id="ChooseSeedSetAction" class="com.smu.graphme.action.ChooseSeedSetAction" text="Choose Seed Set"
+                description="Choose a Seed Set to Generate Dependency Graph">
+            <add-to-group group-id="MainMenu" anchor="first"/>
+        </action>
         <group id="GraphMe" text="GraphMe" description="GraphMe Contextual Menu">
-            <reference ref="com.smu.graphme.action.GenerateGraphAction"/>
+            <reference ref="GenerateGraphAction"/>
+            <reference ref="ChooseSeedSetAction"/>
             <add-to-group group-id="MainMenu" anchor="after" relative-to-action="WindowMenu"/>
             <add-to-group group-id="MainToolBar" anchor="after" relative-to-action="HelpTopics"/>
         </group>
+
     </actions>
 </idea-plugin>

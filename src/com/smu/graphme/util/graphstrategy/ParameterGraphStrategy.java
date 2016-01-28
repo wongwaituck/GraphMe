@@ -1,4 +1,4 @@
-package com.smu.graphme.util;
+package com.smu.graphme.util.graphstrategy;
 
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
