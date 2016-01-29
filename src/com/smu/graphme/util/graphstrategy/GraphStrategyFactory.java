@@ -22,6 +22,8 @@ public class GraphStrategyFactory {
             return new ReturnStatementGraphStrategy(e);
         } else if (e instanceof PsiWhileStatement){
             return new WhileStatementGraphStrategy(e);
+        } else if (e instanceof PsiCatchSection){
+            return new CatchSectionGraphStrategy(e);
         } else if (e instanceof PsiNewExpression){
             return new NewExpressionGraphStrategy(e);
         } else if (e instanceof PsiTypeElement){

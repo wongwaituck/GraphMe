@@ -24,8 +24,12 @@ public class MethodCallExpressionImplGraphStrategy extends GraphStrategy{
         PsiMethod method = methodImpl.resolveMethod();
 
         //resolve owning class
-        PsiIdentifier owningClazz = method.getContainingClass().getNameIdentifier();
-        am.setDependency(currPi, owningClazz);
+        if(method != null) {
+            if (method.getContainingClass() != null) {
+                PsiIdentifier owningClazz = method.getContainingClass().getNameIdentifier();
+                am.setDependency(currPi, owningClazz);
+            }
+        }
 
         //resolve parameters
         PsiExpression[] pel = methodImpl.getArgumentList().getExpressions();

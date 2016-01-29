@@ -67,9 +67,8 @@ public class PsiUtility {
 
 
         for(PsiClass c : psiClasses) {
-            psiClassesWithInner.addAll(Arrays.asList(c.getAllInnerClasses()));
+            psiClassesWithInner.addAll(Arrays.asList(c.getInnerClasses()));
         }
-
         return psiClassesWithInner;
 
     }
