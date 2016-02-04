@@ -27,6 +27,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
         <applicationService serviceInterface="com.smu.graphme.service.GenerateGraphService" serviceImplementation="com.smu.graphme.service.GenerateGraphServiceImpl"/>
+        <toolWindow id="GraphMe Tool Window" secondary="true" anchor="right"
+                    factoryClass="com.smu.graphme.toolwindow.GraphMeToolWindowFactory"/>
     </extensions>
 
     <actions>
