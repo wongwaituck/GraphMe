@@ -15,6 +15,9 @@
 * interfaces
 * Generics
 * try catch
+* enum
+
 
 ##To Do
 * try with resources
+* fix if else rare case

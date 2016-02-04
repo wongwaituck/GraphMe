@@ -64,6 +64,15 @@ public class GenerateGraphServiceImpl implements GenerateGraphService, Applicati
             PsiField[] psiFields = c.getAllFields();
             for(PsiField psiField : psiFields){
                 if(psiField != null) {
+                    PsiElement[] elements = psiField.getChildren();
+                    for(PsiElement element : elements) {
+                        try {
+                            GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(element);
+                            gs.handleCase(am, currPi, psiClassesWithInner);
+                        } catch (GraphStrategyException exception){
+
+                        }
+                    }
                     PsiIdentifier pi = GraphStrategy.getPsiIdentifier(psiField, psiClassesWithInner);
                     am.setDependency(currPi, pi);
                 }

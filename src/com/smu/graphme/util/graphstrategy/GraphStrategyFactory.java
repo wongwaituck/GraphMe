@@ -2,6 +2,7 @@ package com.smu.graphme.util.graphstrategy;
 
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
+import com.intellij.psi.impl.source.tree.java.PsiTryStatementImpl;
 
 /**
  * Created by WaiTuck on 24/01/2016.
@@ -14,6 +15,8 @@ public class GraphStrategyFactory {
             return new MethodGraphStrategy(e);
         } else if (e instanceof PsiCodeBlock){
             return new CodeBlockGraphStrategy(e);
+        } else if (e instanceof PsiTryStatement){
+            return new TryStatementGraphStrategy(e);
         } else if (e instanceof PsiSwitchStatement){
             return new SwitchStatementGraphStrategy(e);
         } else if (e instanceof PsiSwitchLabelStatement){
