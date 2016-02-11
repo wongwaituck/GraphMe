@@ -18,11 +18,27 @@ public class TryStatementGraphStrategy extends GraphStrategy{
     public void handleCase(ASTMatrix am, PsiIdentifier currPi, Set<PsiClass> psiClasses) {
         PsiTryStatement pts = (PsiTryStatement) getPsiElement();
 
+        PsiResourceList prl = pts.getResourceList();
+
+
+
+        if(prl != null) {
+            List<PsiResourceVariable> prle = prl.getResourceVariables();
+            for(PsiResourceVariable prv : prle){
+                try {
+                    GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(prv);
+                    gs.handleCase(am, currPi, psiClasses);
+                } catch (GraphStrategyException e){
+
+                }
+            }
+        }
+
         try {
             GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(pts.getTryBlock());
             gs.handleCase(am, currPi, psiClasses);
         } catch (GraphStrategyException e){
-            //
+
         }
 
         PsiParameter[] params = pts.getCatchBlockParameters();

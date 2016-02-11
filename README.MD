@@ -16,8 +16,7 @@
 * Generics
 * try catch
 * enum
-
+* fix if else rare case
 
 ##To Do
 * try with resources
-* fix if else rare case

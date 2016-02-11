@@ -1,6 +1,7 @@
 package com.smu.graphme.util.graphstrategy;
 
 import com.intellij.psi.*;
+import com.intellij.psi.impl.source.tree.java.PsiBinaryExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiTryStatementImpl;
 
@@ -33,10 +34,14 @@ public class GraphStrategyFactory {
             return new TypeElementGraphStrategy(e);
         } else if (e instanceof PsiParameter){
             return new ParameterGraphStrategy(e);
+        } else if (e instanceof PsiResourceVariable){
+            return new ResourceVariableGraphStrategy(e);
         } else if (e instanceof PsiLocalVariable){
             return new LocalVariableGraphStrategy(e);
         } else if (e instanceof PsiInstanceOfExpression) {
             return new InstanceofExpressionGraphStrategy(e);
+        } else if (e instanceof PsiBinaryExpression){
+            return new BinaryExpressionGraphStrategy(e);
         } else if (e instanceof PsiExpression){
             return new ExpressionGraphStrategy(e);
         } else if (e instanceof PsiIfStatement){
