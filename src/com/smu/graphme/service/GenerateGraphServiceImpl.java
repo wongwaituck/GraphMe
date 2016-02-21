@@ -78,6 +78,23 @@ public class GenerateGraphServiceImpl implements GenerateGraphService, Applicati
                 }
             }
 
+            //static block handler
+            PsiElement[] elements = c.getChildren();
+            //get class initializer element
+            for(PsiElement element : elements){
+                if(element instanceof PsiClassInitializer){
+                    PsiClassInitializer pci = (PsiClassInitializer) element;
+                    for(PsiElement pciElement : pci.getChildren()) {
+                        try {
+                            GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(pciElement);
+                            gs.handleCase(am, currPi, psiClassesWithInner);
+                        } catch (GraphStrategyException exception) {
+
+                        }
+                    }
+                }
+            }
+
             //resolve method dependencies
             PsiMethod[] psiMethods = c.getMethods();
             for(PsiMethod psiMethod : psiMethods){

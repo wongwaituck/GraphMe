@@ -14,6 +14,8 @@ public class GraphStrategyFactory {
             return new MethodCallExpressionImplGraphStrategy(e);
         } else if (e instanceof PsiMethod){
             return new MethodGraphStrategy(e);
+        } else if (e instanceof PsiAssignmentExpression){
+            return new AssignmentExpressionGraphStrategy(e);
         } else if (e instanceof PsiCodeBlock){
             return new CodeBlockGraphStrategy(e);
         } else if (e instanceof PsiTryStatement){
