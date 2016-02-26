@@ -10,7 +10,11 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.util.containers.ContainerUtil;
+import com.smu.graphme.model.ASTMatrix;
 import com.smu.graphme.model.DefaultViewSettings;
+import com.smu.graphme.util.graphstrategy.GraphStrategy;
+import com.smu.graphme.util.graphstrategy.GraphStrategyException;
+import com.smu.graphme.util.graphstrategy.GraphStrategyFactory;
 
 import java.util.*;
 
@@ -18,8 +22,7 @@ import java.util.*;
  * Created by WaiTuck on 29/01/2016.
  */
 public class PsiUtility {
-    public static Set<PsiPackage> getPsiTopLevelPackages(AnActionEvent e){
-        Project project = e.getProject();
+    public static Set<PsiPackage> getPsiTopLevelPackages(Project project){
         ProjectViewSettings viewSettings = new DefaultViewSettings();
         final List<VirtualFile> sourceRoots = new ArrayList<>();
         final ProjectRootManager projectRootManager = ProjectRootManager.getInstance(project);
@@ -52,6 +55,86 @@ public class PsiUtility {
             }
         }
         return topLevelPackages;
+    }
+
+    public static Set<PsiPackage> getPsiTopLevelPackages(AnActionEvent e){
+        Project project = e.getProject();
+        return getPsiTopLevelPackages(project);
+    }
+
+    public static ASTMatrix generateASTMatrix(Set<PsiPackage> topLevelPackages){
+        Set<PsiClass> psiClassesWithInner = PsiUtility.getAllUserImplementedClasses(topLevelPackages);
+
+        ASTMatrix am = new ASTMatrix(new ArrayList<>(psiClassesWithInner));
+
+        for(PsiClass c: psiClassesWithInner){
+
+            //resolve implementation and extends list
+            PsiClass[] psiSuperClasses = c.getSupers();
+            PsiIdentifier currPi = c.getNameIdentifier();
+            for(PsiClass pc : psiSuperClasses){
+                PsiIdentifier pi = pc.getNameIdentifier();
+                am.setDependency(currPi, pi);
+            }
+
+            //resolve field references
+            PsiField[] psiFields = c.getAllFields();
+            for(PsiField psiField : psiFields){
+                if(psiField != null) {
+                    PsiElement[] elements = psiField.getChildren();
+                    for(PsiElement element : elements) {
+                        try {
+                            GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(element);
+                            gs.handleCase(am, currPi, psiClassesWithInner);
+                        } catch (GraphStrategyException exception){
+
+                        }
+                    }
+                    PsiIdentifier pi = GraphStrategy.getPsiIdentifier(psiField, psiClassesWithInner);
+                    am.setDependency(currPi, pi);
+                }
+            }
+
+            //static block handler
+            PsiElement[] elements = c.getChildren();
+            //get class initializer element
+            for(PsiElement element : elements){
+                if(element instanceof PsiClassInitializer){
+                    PsiClassInitializer pci = (PsiClassInitializer) element;
+                    for(PsiElement pciElement : pci.getChildren()) {
+                        try {
+                            GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(pciElement);
+                            gs.handleCase(am, currPi, psiClassesWithInner);
+                        } catch (GraphStrategyException exception) {
+
+                        }
+                    }
+                }
+            }
+
+            //resolve method dependencies
+            PsiMethod[] psiMethods = c.getMethods();
+            for(PsiMethod psiMethod : psiMethods){
+                try {
+                    GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(psiMethod);
+                    gs.handleCase(am, currPi, psiClassesWithInner);
+                } catch (GraphStrategyException exception){
+
+                }
+            }
+
+        }
+        return am;
+    }
+
+    public static ASTMatrix generateASTMatrix(AnActionEvent e){
+        Set<PsiPackage> topLevelPackages = PsiUtility.getPsiTopLevelPackages(e);
+        return generateASTMatrix(topLevelPackages);
+    }
+
+    public static ASTMatrix generateASTMatrix(Project p){
+        Set<PsiPackage> topLevelPackages = PsiUtility.getPsiTopLevelPackages(p);
+        return generateASTMatrix(topLevelPackages);
     }
 
     public static Set<PsiClass> getAllUserImplementedClasses(Set<PsiPackage> topLevelPackages){

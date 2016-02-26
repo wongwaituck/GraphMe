@@ -45,74 +45,11 @@ public class GenerateGraphServiceImpl implements GenerateGraphService, Applicati
 
     @Override
     public void generateGraph(AnActionEvent e) {
-        Set<PsiPackage> topLevelPackages = PsiUtility.getPsiTopLevelPackages(e);
-        Set<PsiClass> psiClassesWithInner = PsiUtility.getAllUserImplementedClasses(topLevelPackages);
 
-        ASTMatrix am = new ASTMatrix(new ArrayList<>(psiClassesWithInner));
+        ASTMatrix am = PsiUtility.generateASTMatrix(e);
 
-        for(PsiClass c: psiClassesWithInner){
-
-            //resolve implementation and extends list
-            PsiClass[] psiSuperClasses = c.getSupers();
-            PsiIdentifier currPi = c.getNameIdentifier();
-            for(PsiClass pc : psiSuperClasses){
-                PsiIdentifier pi = pc.getNameIdentifier();
-                am.setDependency(currPi, pi);
-            }
-
-            //resolve field references
-            PsiField[] psiFields = c.getAllFields();
-            for(PsiField psiField : psiFields){
-                if(psiField != null) {
-                    PsiElement[] elements = psiField.getChildren();
-                    for(PsiElement element : elements) {
-                        try {
-                            GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(element);
-                            gs.handleCase(am, currPi, psiClassesWithInner);
-                        } catch (GraphStrategyException exception){
-
-                        }
-                    }
-                    PsiIdentifier pi = GraphStrategy.getPsiIdentifier(psiField, psiClassesWithInner);
-                    am.setDependency(currPi, pi);
-                }
-            }
-
-            //static block handler
-            PsiElement[] elements = c.getChildren();
-            //get class initializer element
-            for(PsiElement element : elements){
-                if(element instanceof PsiClassInitializer){
-                    PsiClassInitializer pci = (PsiClassInitializer) element;
-                    for(PsiElement pciElement : pci.getChildren()) {
-                        try {
-                            GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(pciElement);
-                            gs.handleCase(am, currPi, psiClassesWithInner);
-                        } catch (GraphStrategyException exception) {
-
-                        }
-                    }
-                }
-            }
-
-            //resolve method dependencies
-            PsiMethod[] psiMethods = c.getMethods();
-            for(PsiMethod psiMethod : psiMethods){
-                try {
-                    GraphStrategy gs = GraphStrategyFactory.getRelevantStrategy(psiMethod);
-                    gs.handleCase(am, currPi, psiClassesWithInner);
-                } catch (GraphStrategyException exception){
-
-                }
-            }
-
-        }
         am.printDependencyMatrix();
 
-        //test for seed set of Main
-        System.out.println("Testing generate from set");
-        PsiClass[] testSeedClass = new PsiClass[2];
-        am.generateFromSeedSet(psiClassesWithInner.stream().limit(2).collect(Collectors.toList()).toArray(testSeedClass));
     }
 
 
