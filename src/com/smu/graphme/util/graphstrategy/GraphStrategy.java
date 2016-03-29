@@ -17,6 +17,8 @@ public abstract class GraphStrategy {
 
     public abstract void handleCase(ASTMatrix am, PsiIdentifier currPi, Set<PsiClass> psiClasses);
 
+    //public abstract void handleCase(ASTMatrix am, PsiIdentifier currPi, Set<String> psiClasses);
+
     public PsiElement getPsiElement(){
         return e;
     }

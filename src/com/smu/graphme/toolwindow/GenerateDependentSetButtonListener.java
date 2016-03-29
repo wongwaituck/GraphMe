@@ -13,19 +13,18 @@ import java.util.List;
  * Created by WaiTuck on 26/02/2016.
  */
 public class GenerateDependentSetButtonListener implements ActionListener {
-    private JList<PsiIdentifier> jList;
+    private List<PsiIdentifier> selectedList;
     private ASTMatrix am;
 
-    public GenerateDependentSetButtonListener(JList jList, ASTMatrix am){
-        this.jList = jList;
+    public GenerateDependentSetButtonListener(List<PsiIdentifier> selectedList, ASTMatrix am){
+        this.selectedList = selectedList;
         this.am = am;
     }
 
     @Override
     public void actionPerformed(ActionEvent ae) {
         String action = ae.getActionCommand();
-        List<PsiIdentifier> seedPsiIdentifiers = jList.getSelectedValuesList();
-        am.generateFromSeedSet(seedPsiIdentifiers);
+        am.generateFromSeedSet(selectedList);
     }
 
 

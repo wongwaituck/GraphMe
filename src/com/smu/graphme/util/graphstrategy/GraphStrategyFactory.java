@@ -22,6 +22,8 @@ public class GraphStrategyFactory {
             return new TryStatementGraphStrategy(e);
         } else if (e instanceof PsiSwitchStatement){
             return new SwitchStatementGraphStrategy(e);
+        } else if (e instanceof PsiConditionalExpression){
+            return new ConditionalExpressionGraphStrategy(e);
         } else if (e instanceof PsiSwitchLabelStatement){
             return new SwitchLabelStatementGraphStrategy(e);
         } else if (e instanceof PsiReturnStatement){

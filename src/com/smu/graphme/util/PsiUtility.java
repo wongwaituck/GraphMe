@@ -140,7 +140,7 @@ public class PsiUtility {
     public static Set<PsiClass> getAllUserImplementedClasses(Set<PsiPackage> topLevelPackages){
         Set<PsiClass> psiClasses = new LinkedHashSet<>();
         for(PsiPackage pkg : topLevelPackages){
-            for(PsiPackage a : getLeafPackages(pkg, psiClasses)){}
+            getLeafPackages(pkg, psiClasses);
         }
 
 
@@ -156,23 +156,15 @@ public class PsiUtility {
 
     }
 
-    private static PsiPackage[] getLeafPackages(PsiPackage root, Set<PsiClass> psiClasses){
+    private static void getLeafPackages(PsiPackage root, Set<PsiClass> psiClasses){
         //collect all relevant classes along the way
-        List<PsiPackage> psiPackages = new ArrayList<>();
         if(!root.getQualifiedName().contains("com.sun") && !root.getQualifiedName().contains("com.oracle")){
             psiClasses.addAll(Arrays.asList(root.getClasses()));
         }
-        if(root.getSubPackages().length == 0){
-            PsiPackage[] nodeContainer = new PsiPackage[1];
-            nodeContainer[0] = root;
-            return nodeContainer;
-        } else{
-
+        if(root.getSubPackages().length != 0){
             for(PsiPackage b : root.getSubPackages()){
-                psiPackages.addAll(Arrays.asList(getLeafPackages(b, psiClasses)));
+               getLeafPackages(b, psiClasses);
             }
-            PsiPackage[] packages = new PsiPackage[psiPackages.size()];
-            return psiPackages.toArray(packages);
         }
 
     }
