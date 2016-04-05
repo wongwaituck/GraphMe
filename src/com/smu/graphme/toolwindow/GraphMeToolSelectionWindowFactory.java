@@ -68,9 +68,13 @@ public class GraphMeToolSelectionWindowFactory implements ToolWindowFactory{
         JButton generateButton = new JButton("Generate Dependent Set");
         generateButton.addActionListener(new GenerateDependentSetButtonListener(currentSelectedList, am));
 
+        JButton generateFullyTransitiveButton = new JButton("Generate Fully Transitive Set");
+        generateFullyTransitiveButton.addActionListener(new GenerateFullyTransitiveDependentSetButtonListener(currentSelectedList, am));
+
 
         customPanel.add(new JLabel("Select your seed set"));
         customPanel.add(generateButton);
+        customPanel.add(generateFullyTransitiveButton);
         customPanel.add(listOfPsis);
         customPanel.add(listOfSelectedPsis);
 

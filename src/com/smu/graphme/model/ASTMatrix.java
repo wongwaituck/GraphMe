@@ -4,10 +4,10 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiIdentifier;
 import com.smu.graphme.util.PsiUtility;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * Created by WaiTuck on 15/01/2016.
@@ -53,6 +53,47 @@ public class ASTMatrix {
                 dependencyIndex >= 0 && dependencyIndex < referenceMatrix[0].length;
     }
 
+    private int getFullyTransitiveDependencyForOnePi(PsiIdentifier pi, boolean[] hasVisited){
+        int count = 0;
+        int referenceIndex = getIndex(pi);
+        for (int i = 0; i < psiClasses.size(); i++) {
+            if (referenceMatrix[i][referenceIndex] > 0 && !hasVisited[i]) {
+                count++;
+                hasVisited[i] = true;
+                count += getFullyTransitiveDependencyForOnePi(psiClasses.get(i).getNameIdentifier(), hasVisited);
+            }
+        }
+        return count;
+    }
+
+
+    public int getFullyTransitiveDependencySize(Collection<PsiIdentifier> pies, boolean[] hasVisited){
+
+        //create a matrix called hasVisited to prevent cyclic dependencies
+        if(hasVisited == null) {
+            hasVisited = new boolean[psiClasses.size()];
+        }
+        //resolve first level dependencies which are not itself
+        int count = 0;
+
+        //get index of reference
+        for(PsiIdentifier pi : pies) {
+            int referenceIndex = getIndex(pi);
+            for (int i = 0; i < psiClasses.size(); i++) {
+                if (referenceMatrix[i][referenceIndex] > 0 && !hasVisited[i]) {
+                    count++;
+                    hasVisited[i] = true;
+                    count += getFullyTransitiveDependencyForOnePi(psiClasses.get(i).getNameIdentifier(), hasVisited);
+                }
+            }
+        }
+
+        return count;
+
+    }
+
+
+
     public void printDependencyMatrix() {
         for (int rowIndex = 0; rowIndex < referenceMatrix.length; rowIndex++) {
             for (int colIndex = 0; colIndex < referenceMatrix[rowIndex].length; colIndex++) {
@@ -70,22 +111,35 @@ public class ASTMatrix {
     }
 
     public void generateFromSeedSet(Collection<PsiIdentifier> seedIdClasses) {
+        Set<PsiIdentifier> uniqueDependencySet = new HashSet<>();
         for (int rowIndex = 0; rowIndex < referenceMatrix.length; rowIndex++) {
             for (int colIndex = 0; colIndex < referenceMatrix[rowIndex].length; colIndex++) {
                 if (seedIdClasses.contains(psis.get(colIndex)) && referenceMatrix[rowIndex][colIndex] > 0) {
                     System.out.println(psis.get(rowIndex).getText() + " depends on " + psis.get(colIndex).getText());
+                    uniqueDependencySet.add(psis.get(rowIndex));
                 }
             }
         }
+        for(PsiIdentifier pi: seedIdClasses){
+            uniqueDependencySet.remove(pi);
+        }
+        System.out.println(uniqueDependencySet);
+        System.out.println("Size of dependency set: " + uniqueDependencySet.size());
     }
 
     public void dumpDependencyToFile() {
-        for (int rowIndex = 0; rowIndex < referenceMatrix.length; rowIndex++) {
-            for (int colIndex = 0; colIndex < referenceMatrix[rowIndex].length; colIndex++) {
-                if (referenceMatrix[rowIndex][colIndex] > 0) {
-                    System.out.println(psis.get(rowIndex).getText() + "<-" + psis.get(colIndex).getText());
+        try {
+            PrintWriter pw = new PrintWriter(new FileOutputStream("dependency.dot"));
+            for (int rowIndex = 0; rowIndex < referenceMatrix.length; rowIndex++) {
+                for (int colIndex = 0; colIndex < referenceMatrix[rowIndex].length; colIndex++) {
+                    if (referenceMatrix[rowIndex][colIndex] > 0) {
+                        pw.println( psis.get(colIndex).getText()+ "->" + psis.get(rowIndex).getText());
+                    }
                 }
             }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
+
     }
 }
