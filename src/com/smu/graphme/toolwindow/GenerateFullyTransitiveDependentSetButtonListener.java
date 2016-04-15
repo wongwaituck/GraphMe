@@ -23,7 +23,8 @@ public class GenerateFullyTransitiveDependentSetButtonListener implements Action
     public void actionPerformed(ActionEvent ae) {
         String action = ae.getActionCommand();
         int count = am.getFullyTransitiveDependencySize(selectedList, null);
-        am.dumpDependencyToFile();
+        am.dumpDependencyToFile(selectedList);
+        am.dumpFullDependencyToFile(selectedList, null, null);
         System.out.println("Fully Transitive Count: " + count);
     }
 

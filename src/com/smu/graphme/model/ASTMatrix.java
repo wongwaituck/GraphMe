@@ -53,45 +53,37 @@ public class ASTMatrix {
                 dependencyIndex >= 0 && dependencyIndex < referenceMatrix[0].length;
     }
 
-    private int getFullyTransitiveDependencyForOnePi(PsiIdentifier pi, boolean[] hasVisited){
-        int count = 0;
+    private void resolveDependencyForonePi(PsiIdentifier pi, Set<PsiIdentifier> hasVisited) {
         int referenceIndex = getIndex(pi);
         for (int i = 0; i < psiClasses.size(); i++) {
-            if (referenceMatrix[i][referenceIndex] > 0 && !hasVisited[i]) {
-                count++;
-                hasVisited[i] = true;
-                count += getFullyTransitiveDependencyForOnePi(psiClasses.get(i).getNameIdentifier(), hasVisited);
+            if (referenceMatrix[i][referenceIndex] > 0 && !hasVisited.contains(getPsis().get(i))) {
+                hasVisited.add(getPsis().get(i));
+                resolveDependencyForonePi(psiClasses.get(i).getNameIdentifier(), hasVisited);
             }
         }
-        return count;
     }
 
 
-    public int getFullyTransitiveDependencySize(Collection<PsiIdentifier> pies, boolean[] hasVisited){
+    public int getFullyTransitiveDependencySize(Collection<PsiIdentifier> seedSet, Set<PsiIdentifier> hasVisited) {
 
         //create a matrix called hasVisited to prevent cyclic dependencies
-        if(hasVisited == null) {
-            hasVisited = new boolean[psiClasses.size()];
+        if (hasVisited == null) {
+            hasVisited = new HashSet<>();
         }
-        //resolve first level dependencies which are not itself
-        int count = 0;
 
         //get index of reference
-        for(PsiIdentifier pi : pies) {
-            int referenceIndex = getIndex(pi);
-            for (int i = 0; i < psiClasses.size(); i++) {
-                if (referenceMatrix[i][referenceIndex] > 0 && !hasVisited[i]) {
-                    count++;
-                    hasVisited[i] = true;
-                    count += getFullyTransitiveDependencyForOnePi(psiClasses.get(i).getNameIdentifier(), hasVisited);
-                }
-            }
+        for (PsiIdentifier pi : seedSet) {
+            resolveDependencyForonePi(pi, hasVisited);
         }
 
-        return count;
+        //remove classes in visitedset from seedset
+        for(PsiIdentifier pi : seedSet){
+            hasVisited.remove(pi);
+        }
+
+        return hasVisited.size();
 
     }
-
 
 
     public void printDependencyMatrix() {
@@ -107,7 +99,6 @@ public class ASTMatrix {
     public void generateFromSeedSet(PsiClass[] seedPsiClasses) {
         Set<PsiIdentifier> seedIdClasses = PsiUtility.convertPsiClassesToPsiIdentifiers(seedPsiClasses);
         generateFromSeedSet(seedIdClasses);
-
     }
 
     public void generateFromSeedSet(Collection<PsiIdentifier> seedIdClasses) {
@@ -120,25 +111,69 @@ public class ASTMatrix {
                 }
             }
         }
-        for(PsiIdentifier pi: seedIdClasses){
+        for (PsiIdentifier pi : seedIdClasses) {
             uniqueDependencySet.remove(pi);
         }
         System.out.println(uniqueDependencySet);
         System.out.println("Size of dependency set: " + uniqueDependencySet.size());
     }
 
-    public void dumpDependencyToFile() {
+    public void dumpDependencyToFile(List<PsiIdentifier> selectedList) {
         try {
-            PrintWriter pw = new PrintWriter(new FileOutputStream("dependency.dot"));
+            PrintWriter pw = new PrintWriter(new FileOutputStream("C:/Users/WaiTuck/Desktop/dependency.dot"));
+            pw.println("digraph dependency{");
             for (int rowIndex = 0; rowIndex < referenceMatrix.length; rowIndex++) {
                 for (int colIndex = 0; colIndex < referenceMatrix[rowIndex].length; colIndex++) {
-                    if (referenceMatrix[rowIndex][colIndex] > 0) {
-                        pw.println( psis.get(colIndex).getText()+ "->" + psis.get(rowIndex).getText());
+                    if (selectedList.contains(psis.get(colIndex)) && referenceMatrix[rowIndex][colIndex] > 0) {
+                        pw.println(psis.get(rowIndex).getText() + " -> " + psis.get(colIndex).getText() + ";");
+                        pw.flush();
                     }
                 }
             }
+            pw.println("}");
+            pw.flush();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        }
+
+    }
+
+    public void dumpFullDependencyToFile(List<PsiIdentifier> selectedList, PrintWriter pw, Set<DependsOnRelationship> hasVisited) {
+        try {
+            if (pw == null) {
+                pw = new PrintWriter(new FileOutputStream("C:/Users/WaiTuck/Desktop/fulldependency.dot"));
+                pw.println("digraph fulldependency{");
+            }
+            if (hasVisited == null) {
+                hasVisited = new HashSet<>();
+            }
+
+            //get index of reference
+            for (PsiIdentifier pi : selectedList) {
+                dumpFullDependencyToFileForOnePi(pi, pw, hasVisited);
+            }
+            pw.println("}");
+            pw.flush();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void dumpFullDependencyToFileForOnePi(PsiIdentifier pi, PrintWriter pw, Set<DependsOnRelationship> hasVisited) {
+        int referenceIndex = getIndex(pi);
+        for (int i = 0; i < psiClasses.size(); i++) {
+
+            if (referenceMatrix[i][referenceIndex] > 0) {
+                //Create the dependency relation edge
+                DependsOnRelationship dor = new DependsOnRelationship(psis.get(referenceIndex), psis.get(i));
+                //check if the edge has been traversed
+                if(!hasVisited.contains(dor)){
+                    pw.println(psis.get(i).getText() + " -> " + psis.get(referenceIndex).getText() + ";");
+                    pw.flush();
+                    hasVisited.add(dor);
+                    dumpFullDependencyToFileForOnePi(psiClasses.get(i).getNameIdentifier(), pw, hasVisited);
+                }
+            }
         }
 
     }
