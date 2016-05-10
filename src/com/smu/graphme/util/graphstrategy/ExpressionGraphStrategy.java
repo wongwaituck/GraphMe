@@ -13,6 +13,8 @@ public class ExpressionGraphStrategy extends GraphStrategy {
         super(e);
     }
 
+    //Ex: A a;
+    //The "expression" is the 'A'
     @Override
     public void handleCase(ASTMatrix am, PsiIdentifier currPi, Set<PsiClass> psiClasses) {
         PsiExpression expression = (PsiExpression) getPsiElement();
