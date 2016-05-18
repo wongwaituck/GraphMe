@@ -32,7 +32,6 @@ public class GraphMeToolSelectionWindowFactory implements ToolWindowFactory{
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-
         myToolWindow = toolWindow;
         this.project = project;
 

@@ -24,7 +24,7 @@ public class GenerateDependentSetButtonListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent ae) {
         String action = ae.getActionCommand();
-        am.generateFromSeedSet(selectedList);
+        am.dependentSetFromSeedSet(selectedList);
     }
 
 

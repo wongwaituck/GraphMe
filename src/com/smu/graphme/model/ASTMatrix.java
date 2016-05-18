@@ -13,9 +13,20 @@ import java.util.*;
  * Created by WaiTuck on 15/01/2016.
  */
 public class ASTMatrix {
+    public static void setSingleton(ASTMatrix singleton) {
+        ASTMatrix.singleton = singleton;
+    }
+
+    public static ASTMatrix getSingleton() {
+        return singleton;
+    }
+
+    private static ASTMatrix singleton;
     private int[][] referenceMatrix;
     private List<PsiIdentifier> psis;
     private List<PsiClass> psiClasses;
+    private int[] breadthMatrix;
+    private List<PsiIdentifier> roots;
 
     public ASTMatrix(List<PsiClass> psiClasses) {
         psis = new ArrayList<>();
@@ -96,12 +107,21 @@ public class ASTMatrix {
         }
     }
 
-    public void generateFromSeedSet(PsiClass[] seedPsiClasses) {
+    public Set<PsiIdentifier> dependentSetFromSeedSet(PsiClass[] seedPsiClasses) {
         Set<PsiIdentifier> seedIdClasses = PsiUtility.convertPsiClassesToPsiIdentifiers(seedPsiClasses);
-        generateFromSeedSet(seedIdClasses);
+        return dependentSetFromSeedSet(seedIdClasses);
     }
 
-    public void generateFromSeedSet(Collection<PsiIdentifier> seedIdClasses) {
+    public Set<PsiIdentifier> dependentSetFromSeedSet(Collection<PsiIdentifier> seedIdClasses) {
+        int[] seedIndexes = new int[seedIdClasses.size()];
+
+        int i = 0;
+        for (PsiIdentifier pi : seedIdClasses) {
+            seedIndexes[i++] = getIndex(pi);
+        }
+
+        return dependentSetFromSeedSet(seedIndexes);
+/*
         Set<PsiIdentifier> uniqueDependencySet = new HashSet<>();
         for (int rowIndex = 0; rowIndex < referenceMatrix.length; rowIndex++) {
             for (int colIndex = 0; colIndex < referenceMatrix[rowIndex].length; colIndex++) {
@@ -116,6 +136,32 @@ public class ASTMatrix {
         }
         System.out.println(uniqueDependencySet);
         System.out.println("Size of dependency set: " + uniqueDependencySet.size());
+
+        return uniqueDependencySet;
+*/
+    }
+
+    public Set<PsiIdentifier>  dependentSetFromSeedSet(int[] seedIndexes)
+    {
+        Set<PsiIdentifier> uniqueDependencySet = new HashSet<>();
+
+        for (int rowIndex = 0; rowIndex < referenceMatrix.length; rowIndex++) {
+            for (int seed : seedIndexes)
+            {
+                if (rowIndex == seed)
+                    continue;
+
+                if (referenceMatrix[rowIndex][seed] > 0) {
+                    System.out.println(psis.get(rowIndex).getText() + " depends on " + psis.get(seed).getText());
+                    uniqueDependencySet.add(psis.get(rowIndex));
+                }
+            }
+        }
+
+//        System.out.println(uniqueDependencySet);
+//        System.out.println("Size of dependency set: " + uniqueDependencySet.size());
+
+        return uniqueDependencySet;
     }
 
     public void dumpDependencyToFile(List<PsiIdentifier> selectedList) {
@@ -175,6 +221,55 @@ public class ASTMatrix {
                 }
             }
         }
+
+    }
+
+    public int[][] getMatrix()
+    {
+        return this.referenceMatrix;
+    }
+
+    public List<PsiIdentifier> generateRoots()
+    {
+        //start at 0
+
+        //set M-0 to #dependencies
+        //walk each dependency
+            //if M-i < 0 then
+            //set M-i to #dep and
+            //DFS to set M-i to #dependencies
+
+        //move to 1 ...
+
+        roots = new ArrayList<>();
+
+        //initialize to -1
+        breadthMatrix = new int[referenceMatrix.length];
+        for (int i = 0; i < breadthMatrix.length; i++) {breadthMatrix[i] = -1;}
+
+        for (int currentNode = 0; currentNode < breadthMatrix.length; currentNode++)
+        {
+            countRoot(currentNode);
+        }
+
+        return roots;
+    }
+
+    private void countRoot(int currentNode)
+    {
+        if (breadthMatrix[currentNode] != -1)
+            return;
+
+        breadthMatrix[currentNode] = 0; //initialize
+        for (int d = 0; d < referenceMatrix[currentNode].length; d++)
+        {
+            breadthMatrix[currentNode] += referenceMatrix[currentNode][d];
+            if (referenceMatrix[currentNode][d] > 0)
+                countRoot(d);
+        }
+
+        if (breadthMatrix[currentNode] == 0)
+            roots.add(psis.get(currentNode));
 
     }
 }

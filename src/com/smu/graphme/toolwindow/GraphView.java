@@ -1,5 +1,13 @@
 package com.smu.graphme.toolwindow;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiIdentifier;
+import com.smu.graphme.model.ASTMatrix;
+import com.smu.graphme.toolwindow.prefuse.DependOnHighlightControl;
+import com.smu.graphme.toolwindow.prefuse.DepenedencyHighlight;
+import com.smu.graphme.toolwindow.prefuse.SelectSeedSetControl;
+import com.smu.graphme.util.PsiUtility;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.ActionList;
@@ -9,38 +17,26 @@ import prefuse.action.filter.GraphDistanceFilter;
 import prefuse.action.layout.graph.ForceDirectedLayout;
 import prefuse.activity.Activity;
 import prefuse.controls.*;
-import prefuse.data.Graph;
-import prefuse.data.Table;
-import prefuse.data.Tuple;
+import prefuse.data.*;
 import prefuse.data.event.TupleSetListener;
 import prefuse.data.io.GraphMLReader;
 import prefuse.data.tuple.TupleSet;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
-import prefuse.util.GraphLib;
-import prefuse.util.GraphicsLib;
-import prefuse.util.display.DisplayLib;
-import prefuse.util.display.ItemBoundsListener;
+import prefuse.util.StrokeLib;
 import prefuse.util.force.ForceSimulator;
-import prefuse.util.io.IOLib;
 import prefuse.util.ui.JForcePanel;
 import prefuse.util.ui.JValueSlider;
-import prefuse.util.ui.UILib;
+import prefuse.visual.NodeItem;
 import prefuse.visual.VisualGraph;
 import prefuse.visual.VisualItem;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 /**
  * Created by WaiTuck on 04/02/2016.
@@ -49,11 +45,16 @@ public class GraphView extends JPanel {
     private static final String graph = "graph";
     private static final String nodes = "graph.nodes";
     private static final String edges = "graph.edges";
+    private static final String LABEL = "label";
 
     private Visualization m_vis;
+    private Project project;
 
-    public GraphView(Graph g, String label) {
+    public GraphView(Project p) {
+            //Graph g, String label) {
         super(new BorderLayout());
+
+        project = p;
 
         // create a new, empty visualization for our data
         m_vis = new Visualization();
@@ -62,14 +63,14 @@ public class GraphView extends JPanel {
         // set up the renderers
 
         LabelRenderer tr = new LabelRenderer();
-        tr.setRoundedCorner(8, 8);
+//        tr.setRoundedCorner(8, 8);
         m_vis.setRendererFactory(new DefaultRendererFactory(tr));
 
         // --------------------------------------------------------------------
         // register the data with a visualization
 
         // adds graph to visualization and sets renderer label field
-        setGraph(g, label);
+        setGraph(PsiUtility.generateASTMatrix(project));
 
         // fix selected focus nodes
         TupleSet focusGroup = m_vis.getGroup(Visualization.FOCUS_ITEMS);
@@ -77,15 +78,20 @@ public class GraphView extends JPanel {
             public void tupleSetChanged(TupleSet ts, Tuple[] add, Tuple[] rem)
             {
                 for ( int i=0; i<rem.length; ++i )
-                    ((VisualItem)rem[i]).setFixed(false);
+                {
+                    ((VisualItem) rem[i]).setFixed(false);
+                    if (rem[i] instanceof  NodeItem)
+                        DepenedencyHighlight.highlight((NodeItem) rem[i], DepenedencyHighlight.Mode.SeedNode, DepenedencyHighlight.Change.Remove);
+                }
                 for ( int i=0; i<add.length; ++i ) {
                     ((VisualItem)add[i]).setFixed(false);
                     ((VisualItem)add[i]).setFixed(true);
                 }
-                if ( ts.getTupleCount() == 0 ) {
+/*                if ( ts.getTupleCount() == 0 ) {
                     ts.addTuple(rem[0]);
                     ((VisualItem)rem[0]).setFixed(false);
                 }
+                */
                 m_vis.run("draw");
             }
         });
@@ -99,17 +105,20 @@ public class GraphView extends JPanel {
         final GraphDistanceFilter filter = new GraphDistanceFilter(graph, hops);
 
         ColorAction fill = new ColorAction(nodes,
-                VisualItem.FILLCOLOR, ColorLib.rgb(200,200,255));
-        fill.add(VisualItem.FIXED, ColorLib.rgb(255,100,100));
+                VisualItem.FILLCOLOR, ColorLib.color(Color.WHITE));
+        fill.add(VisualItem.FIXED, ColorLib.color(Color.GREEN));
         fill.add(VisualItem.HIGHLIGHT, ColorLib.rgb(255,200,125));
+
 
         ActionList draw = new ActionList();
         draw.add(filter);
         draw.add(fill);
-        draw.add(new ColorAction(nodes, VisualItem.STROKECOLOR, 0));
-        draw.add(new ColorAction(nodes, VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0)));
-        draw.add(new ColorAction(edges, VisualItem.FILLCOLOR, ColorLib.gray(200)));
-        draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.gray(200)));
+
+        draw.add(new ColorAction(nodes, VisualItem.STROKECOLOR, ColorLib.color(Color.BLACK)));
+        draw.add(new ColorAction(nodes, VisualItem.TEXTCOLOR, ColorLib.color(Color.BLACK)));
+        draw.add(new ColorAction(edges, VisualItem.FILLCOLOR, ColorLib.color(Color.BLACK)));// .gray(200)));
+        draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.color(Color.BLACK)));
+
 
         ActionList animate = new ActionList(Activity.INFINITY);
         animate.add(new ForceDirectedLayout(graph));
@@ -135,13 +144,13 @@ public class GraphView extends JPanel {
         display.setBackground(Color.WHITE);
 
         // main display controls
-        display.addControlListener(new FocusControl(1));
+        display.addControlListener(new SelectSeedSetControl(1));
         display.addControlListener(new DragControl());
         display.addControlListener(new PanControl());
         display.addControlListener(new ZoomControl());
         display.addControlListener(new WheelZoomControl());
         display.addControlListener(new ZoomToFitControl());
-        display.addControlListener(new NeighborHighlightControl());
+        display.addControlListener(new DependOnHighlightControl());
 
         // overview display
 //        Display overview = new Display(vis);
@@ -197,24 +206,84 @@ public class GraphView extends JPanel {
         add(split);
     }
 
-    public void setGraph(Graph g, String label) {
+    public void setGraph(ASTMatrix asm) {
+
+        //set g based on asm
+        Graph g;
+        ASTMatrix.setSingleton(asm);
+
+        //Option 1 - create a Table and pass table to graph constructor
+        // Table table = ...?
+        // table ...?
+        // g = new Graph(table, true);
+
+        //Option 2 - create empty graph then add nodes and edges
+        g = new Graph(true); // directed graph
+        g.getNodeTable().addColumn(LABEL, LABEL.getClass());
+
+        java.util.List<PsiClass> moduleList = asm.getPsiClasses();
+        System.out.println("psi class list size " + moduleList.size());
+        for (PsiClass m : moduleList)
+        {
+            Node n = g.addNode();
+            n.setString(LABEL, m.getName());
+        }
+
+        int[][] depMatrix = asm.getMatrix();
+        for (int row = 0; row < depMatrix.length; row++)
+        {
+            for (int col = 0; col < depMatrix[row].length; col++)
+            {
+                if (depMatrix[row][col] > 0)
+                {
+                    Node s = g.getNode(row);
+                    Node t = g.getNode(col);
+                    Edge e = g.addEdge(s, t);
+//                    System.out.println("s = " + s + " t = " + t + " e = " + e);
+                }
+            }
+        }
+
+        String label = "label";
+
+
         // update labeling
         DefaultRendererFactory drf = (DefaultRendererFactory)
                 m_vis.getRendererFactory();
-        ((LabelRenderer)drf.getDefaultRenderer()).setTextField(label);
+
+        ((LabelRenderer)drf.getDefaultRenderer()).setTextField(LABEL);
 
         // update graph
         m_vis.removeGroup(graph);
         VisualGraph vg = m_vis.addGraph(graph, g);
         m_vis.setValue(edges, null, VisualItem.INTERACTIVE, Boolean.FALSE);
-        VisualItem f = (VisualItem)vg.getNode(0);
-        m_vis.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
-        f.setFixed(false);
+
+        VisualItem vi = (VisualItem)(vg.getEdge(0));
+        float w = vi.getStroke().getLineWidth();
+        BasicStroke s = StrokeLib.getStroke(w, StrokeLib.DASHES);
+
+        m_vis.setValue(edges, null, VisualItem.STROKE, s);
+
+        //Need to add any disconnected parts.
+        List<PsiIdentifier> roots =  asm.generateRoots();
+
+//        VisualItem f = (VisualItem)vg.getNode(0);
+//        m_vis.getGroup(Visualization.FOCUS_ITEMS).addTuple(f); // setTuple(f);
+
+        for (PsiIdentifier i : roots)
+        {
+            int index = asm.getIndex(i);
+            VisualItem f = (VisualItem)vg.getNode(index);
+            m_vis.getGroup(Visualization.FOCUS_ITEMS).addTuple(f); // setTuple(f);
+//            f.setFixed(true); //this fixes the position
+        }
+
+
     }
 
     // ------------------------------------------------------------------------
     // Main and demo methods
-
+/*
     public static void main(String[] args) {
         UILib.setPlatformLookAndFeel();
 
@@ -228,8 +297,8 @@ public class GraphView extends JPanel {
 
         JFrame frame = demo(datafile, label);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    }
-
+    }*/
+/*
     public static JFrame demo() {
         return demo((String)null, "label");
     }
@@ -249,7 +318,8 @@ public class GraphView extends JPanel {
         }
         return demo(g, label);
     }
-
+*/
+    /*
     public static JFrame demo(Graph g, String label) {
         final GraphView view = new GraphView(g, label);
 
@@ -302,14 +372,14 @@ public class GraphView extends JPanel {
 
         return frame;
     }
-
+*/
 
     // ------------------------------------------------------------------------
 
     /**
      * Swing menu action that loads a graph into the graph viewer.
      */
-    public abstract static class GraphMenuAction extends AbstractAction {
+/*    public abstract static class GraphMenuAction extends AbstractAction {
         private GraphView m_view;
         public GraphMenuAction(String name, String accel, GraphView view) {
             m_view = view;
@@ -322,7 +392,8 @@ public class GraphView extends JPanel {
         }
         protected abstract Graph getGraph();
     }
-
+*/
+        /*
     public static class OpenGraphAction extends AbstractAction {
         private GraphView m_view;
 
@@ -441,6 +512,6 @@ public class GraphView extends JPanel {
                 DisplayLib.fitViewToBounds(d, m_bounds, 0);
             }
         }
-    }
+    }*/
 
 }
