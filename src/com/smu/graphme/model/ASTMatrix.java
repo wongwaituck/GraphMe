@@ -34,7 +34,7 @@ public class ASTMatrix {
         for (PsiClass psiClass : psiClasses) {
             psis.add(psiClass.getNameIdentifier());
         }
-
+        System.out.println("psiClasses size - " + psiClasses.size());
         referenceMatrix = new int[psiClasses.size()][psiClasses.size()];
 
     }
@@ -229,6 +229,15 @@ public class ASTMatrix {
         return this.referenceMatrix;
     }
 
+    public List<PsiIdentifier> generateAllNodes() {
+        List<PsiIdentifier> psiIdentifiers = new ArrayList<>();
+
+        for(PsiClass pc : psiClasses){
+            psiIdentifiers.add(pc.getNameIdentifier());
+        }
+        return psiIdentifiers;
+    }
+
     public List<PsiIdentifier> generateRoots()
     {
         //start at 0
@@ -247,8 +256,7 @@ public class ASTMatrix {
         breadthMatrix = new int[referenceMatrix.length];
         for (int i = 0; i < breadthMatrix.length; i++) {breadthMatrix[i] = -1;}
 
-        for (int currentNode = 0; currentNode < breadthMatrix.length; currentNode++)
-        {
+        for (int currentNode = 0; currentNode < breadthMatrix.length; currentNode++) {
             countRoot(currentNode);
         }
 

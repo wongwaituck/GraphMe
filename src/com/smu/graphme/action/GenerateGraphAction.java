@@ -31,4 +31,6 @@ public class GenerateGraphAction extends AnAction {
         Messages.showMessageDialog("Graph generated in sysout!", "Information", Messages.getInformationIcon());
 
     }
+
+
 }
