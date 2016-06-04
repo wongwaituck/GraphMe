@@ -244,9 +244,9 @@ public class ASTMatrix {
 
         //set M-0 to #dependencies
         //walk each dependency
-            //if M-i < 0 then
-            //set M-i to #dep and
-            //DFS to set M-i to #dependencies
+        //if M-i < 0 then
+        //set M-i to #dep and
+        //DFS to set M-i to #dependencies
 
         //move to 1 ...
 
@@ -271,6 +271,7 @@ public class ASTMatrix {
         breadthMatrix[currentNode] = 0; //initialize
         for (int d = 0; d < referenceMatrix[currentNode].length; d++)
         {
+            if (d == currentNode) continue;
             breadthMatrix[currentNode] += referenceMatrix[currentNode][d];
             if (referenceMatrix[currentNode][d] > 0)
                 countRoot(d);

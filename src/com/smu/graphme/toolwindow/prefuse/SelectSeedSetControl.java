@@ -9,6 +9,7 @@ import prefuse.visual.NodeItem;
 import prefuse.visual.VisualGraph;
 import prefuse.visual.VisualItem;
 
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 
@@ -27,40 +28,39 @@ public class SelectSeedSetControl extends FocusControl
     public void itemClicked(VisualItem item, MouseEvent e)
     {
         if ( !filterCheck(item) ) return;
+
+        Visualization vis = item.getVisualization();
+        TupleSet ts = vis.getFocusGroup(group);
+
         if ( UILib.isButtonPressed(e, button) && e.getClickCount() == ccount )
         {
-            if ( item != curFocus )
-            {
-                Visualization vis = item.getVisualization();
-                TupleSet ts = vis.getFocusGroup(group);
 
-                boolean ctrl = e.isControlDown();
-                if ( !ctrl ) {
-                    curFocus = item;
-                    ts.setTuple(item);
-                    //clear all
-                    DepenedencyHighlight.highlight((NodeItem)item, DepenedencyHighlight.Mode.SeedNode, DepenedencyHighlight.Change.Reset);
-                } else if ( ts.containsTuple(item) ) {
-                    ts.removeTuple(item);
-                    DepenedencyHighlight.highlight((NodeItem)item, DepenedencyHighlight.Mode.SeedNode, DepenedencyHighlight.Change.Remove);
-                    //clear this item
-                } else {
-                    ts.addTuple(item);
-                    //add this item
-                    DepenedencyHighlight.highlight((NodeItem)item, DepenedencyHighlight.Mode.SeedNode, DepenedencyHighlight.Change.Add);
+            item.setFixed(false);
 
-                }
-                runActivity(vis);
+            boolean ctrl = e.isControlDown();
+            if ( !ctrl && item != curFocus) {
+                curFocus = item;
+                ts.setTuple(item);
+                //item.setFillColor(Color.GREEN.getRGB());
 
-            } else if ( e.isControlDown() )
-            {
-                Visualization vis = item.getVisualization();
-                TupleSet ts = vis.getFocusGroup(group);
+                //clear all
+                DepenedencyHighlight.highlight((NodeItem)item, DepenedencyHighlight.Mode.SeedNode, DepenedencyHighlight.Change.Reset);
+                item.setFixed(true);
+            } else if ( ts.containsTuple(item) ) { // || ctrl ) {
                 ts.removeTuple(item);
+                DepenedencyHighlight.highlight((NodeItem)item, DepenedencyHighlight.Mode.SeedNode, DepenedencyHighlight.Change.Remove);
                 //clear this item
-                curFocus = null;
-                runActivity(vis);
+                if (ctrl && item == curFocus) curFocus = null;
+            } else { // if (item != curFocus){
+                ts.addTuple(item);
+                item.setFixed(true);
+                //add this item
+                DepenedencyHighlight.highlight((NodeItem)item, DepenedencyHighlight.Mode.SeedNode, DepenedencyHighlight.Change.Add);
+
             }
+            runActivity(vis);
+
+
         }
 
         if ( ! (item instanceof NodeItem) )
@@ -94,13 +94,18 @@ public class SelectSeedSetControl extends FocusControl
             }
         }
 */
+        if (ts.getTupleCount() == 0)
+        {
+            System.out.println("itemClicked() re-add");
+            ts.addTuple(item);
+            item.setFixed(false);
+        }
 
         //ok focus group is set.
-        Visualization vis = item.getVisualization();
         vis.run("draw");
     }
 
-        private void runActivity(Visualization vis) {
+    private void runActivity(Visualization vis) {
         if ( activity != null ) {
             vis.run(activity);
         }

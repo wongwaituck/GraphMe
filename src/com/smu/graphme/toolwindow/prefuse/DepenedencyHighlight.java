@@ -37,6 +37,7 @@ public class DepenedencyHighlight
                 while (it.hasNext())
                 {
                     NodeItem nodeItem = (NodeItem)it.next();
+                    nodeItem.setFixed(false);
                     nodeItem.setHighlighted(false); //remove from dependent Set
                 }
                 break;
@@ -91,31 +92,31 @@ public class DepenedencyHighlight
      *  The following tranverses edges, removes the highlights of dependent nodes
      *  Then re-highlights if the node is dependent on other seeds.
 
-        Iterator<EdgeItem> iter = selectedNode.edges();
-        while (iter.hasNext())
-        {
-            EdgeItem edgeItem = iter.next();
-            if (edgeItem.getSourceItem().equals(selectedNode))
-                continue;
+     Iterator<EdgeItem> iter = selectedNode.edges();
+     while (iter.hasNext())
+     {
+     EdgeItem edgeItem = iter.next();
+     if (edgeItem.getSourceItem().equals(selectedNode))
+     continue;
 
-            NodeItem nodeItem = edgeItem.getAdjacentItem(selectedNode);
-            nodeItem.setHighlighted(false); //remove from dependent Set
+     NodeItem nodeItem = edgeItem.getAdjacentItem(selectedNode);
+     nodeItem.setHighlighted(false); //remove from dependent Set
 
-            //now have to check if it is still dependent on anything in the remaining seed set
-            Iterator<EdgeItem> candidateIter = nodeItem.edges();
-            while (candidateIter.hasNext())
-            {
-                EdgeItem candidateEdge = candidateIter.next();
-                if (candidateEdge.getTargetItem().equals(nodeItem))
-                    continue;
-                NodeItem checkNode = candidateEdge.getAdjacentItem(nodeItem);
-                if (focusSet.containsTuple(checkNode))
-                {
-                    nodeItem.setHighlighted(true);
-                    break;
-                }
-            }
-        }
+     //now have to check if it is still dependent on anything in the remaining seed set
+     Iterator<EdgeItem> candidateIter = nodeItem.edges();
+     while (candidateIter.hasNext())
+     {
+     EdgeItem candidateEdge = candidateIter.next();
+     if (candidateEdge.getTargetItem().equals(nodeItem))
+     continue;
+     NodeItem checkNode = candidateEdge.getAdjacentItem(nodeItem);
+     if (focusSet.containsTuple(checkNode))
+     {
+     nodeItem.setHighlighted(true);
+     break;
+     }
+     }
+     }
      */
 
 }

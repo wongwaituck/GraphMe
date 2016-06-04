@@ -78,14 +78,14 @@ public class GraphView extends JPanel {
                 System.out.println("f: " + f);
                 for (int i = 0; i < f.getParameterCount(); i++) {
                     if (f.getParameterName(i).contains("SpringLength")) {
-                        f.setParameter(i, 80);
+                        f.setParameter(i, 82);
                     }
                 }
             } else {
                 if (f instanceof DragForce) {
                     for (int i = 0; i < f.getParameterCount(); i++) {
                         if (f.getParameterName(i).contains("DragCo")) {
-                            f.setParameter(i, 0.060f);
+                            f.setParameter(i, 0.010f);
                         }
                     }
                 }
@@ -93,7 +93,7 @@ public class GraphView extends JPanel {
                 if (f instanceof NBodyForce) {
                     for (int i = 0; i < f.getParameterCount(); i++) {
                         if (f.getParameterName(i).contains("GravitationalConstant")) {
-                            f.setParameter(i, -0.1f);
+                            f.setParameter(i, -0.99f);
                         }
                     }
                 }
@@ -132,6 +132,7 @@ public class GraphView extends JPanel {
         for (PsiClass m : moduleList) {
             Node n = g.addNode();
             n.setString(LABEL, m.getName());
+            System.out.println("Added " + m.getName());
         }
 
         int[][] depMatrix = asm.getMatrix();
@@ -169,6 +170,7 @@ public class GraphView extends JPanel {
         List<PsiIdentifier> roots = asm.generateRoots();
 
         for (PsiIdentifier i : roots) {
+            System.out.println("Root: " + i.getText());
             int index = asm.getIndex(i);
             VisualItem f = (VisualItem) vg.getNode(index);
             m_vis.getGroup(Visualization.FOCUS_ITEMS).addTuple(f); // setTuple(f);
